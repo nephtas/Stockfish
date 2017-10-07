@@ -256,6 +256,10 @@ namespace {
   void update_capture_stats(const Position& pos, Move move, Move* captures, int captureCnt, int bonus);
 
   inline bool gives_check(const Position& pos, Move move) {
+#ifdef HELPMATE
+    if (pos.is_helpmate())
+        return false;
+#endif
     Color us = pos.side_to_move();
     return  type_of(move) == NORMAL && !(pos.blockers_for_king(~us) & pos.pieces(us))
 #ifdef ATOMIC
@@ -263,9 +267,6 @@ namespace {
 #endif
 #ifdef GRID
           && !pos.is_grid()
-#endif
-#ifdef HELPMATE
-          && !pos.is_helpmate()
 #endif
           ? pos.check_squares(type_of(pos.moved_piece(move))) & to_sq(move)
           : pos.gives_check(move);
@@ -951,6 +952,10 @@ namespace {
 
         tte->save(posKey, VALUE_NONE, BOUND_NONE, DEPTH_NONE, MOVE_NONE, pureStaticEval);
     }
+#ifdef HELPMATE
+    if (pos.is_helpmate())
+        eval = -eval;
+#endif
 
 #ifdef ANTI
     if (pos.is_anti() && pos.can_capture())
@@ -1163,6 +1168,10 @@ moves_loop: // When in check, search starts from here
           (ss+1)->pv = nullptr;
 
       extension = DEPTH_ZERO;
+#ifdef HELPMATE
+      if (pos.is_helpmate())
+          captureOrPromotion = (type_of(move) == PROMOTION);
+#endif
       captureOrPromotion = pos.capture_or_promotion(move);
       movedPiece = pos.moved_piece(move);
       givesCheck = gives_check(pos, move);
@@ -1227,9 +1236,6 @@ moves_loop: // When in check, search starts from here
 #endif
 #ifdef LOSERS
               && (!pos.is_losers() || !(pos.attackers_to(to_sq(move)) & pos.pieces(~pos.side_to_move())))
-#endif
-#ifdef HELPMATE
-              && !pos.is_helpmate()
 #endif
 #ifdef HORDE
               && (pos.is_horde() || !pos.advanced_pawn_push(move) || pos.non_pawn_material() >= Value(5000))
@@ -1363,7 +1369,8 @@ moves_loop: // When in check, search starts from here
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 #ifdef HELPMATE
-          if (pos.is_helpmate()) value = -value;
+          if (pos.is_helpmate())
+              value = -value;
 #endif
 
           doFullDepthSearch = (value > alpha && d != newDepth);
@@ -1376,7 +1383,8 @@ moves_loop: // When in check, search starts from here
       {
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, newDepth, !cutNode);
 #ifdef HELPMATE
-          if (pos.is_helpmate()) value = -value;
+          if (pos.is_helpmate())
+              value = -value;
 #endif
       }
 
@@ -1390,7 +1398,8 @@ moves_loop: // When in check, search starts from here
 
           value = -search<PV>(pos, ss+1, -beta, -alpha, newDepth, false);
 #ifdef HELPMATE
-          if (pos.is_helpmate()) value = -value;
+          if (pos.is_helpmate())
+              value = -value;
 #endif
       }
 
@@ -1716,7 +1725,8 @@ moves_loop: // When in check, search starts from here
       pos.do_move(move, st, givesCheck);
       value = -qsearch<NT>(pos, ss+1, -beta, -alpha, depth - ONE_PLY);
 #ifdef HELPMATE
-      if (pos.is_helpmate()) value = -value;
+      if (pos.is_helpmate())
+          value = -value;
 #endif
       pos.undo_move(move);
 
