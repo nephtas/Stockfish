@@ -206,6 +206,9 @@ public:
 #ifdef LOOP
   bool is_loop() const;
 #endif
+#ifdef RELAY
+  bool is_relay() const;
+#endif
 #ifdef EXTINCTION
   bool is_extinction() const;
   bool is_extinction_win() const;
@@ -832,6 +835,12 @@ inline bool Position::is_bughouse() const {
 #ifdef LOOP
 inline bool Position::is_loop() const {
   return subvar == LOOP_VARIANT;
+}
+#endif
+
+#ifdef RELAY
+inline bool Position::is_relay() const {
+  return subvar == RELAY_VARIANT;
 }
 #endif
 

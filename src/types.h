@@ -160,6 +160,9 @@ enum Variant {
 #ifdef LOOP
   LOOP_VARIANT,
 #endif
+#ifdef RELAY
+  RELAY_VARIANT,
+#endif
 #ifdef SLIPPEDGRID
   SLIPPEDGRID_VARIANT,
 #endif
@@ -218,6 +221,9 @@ static std::vector<std::string> variants = {
 #endif
 #ifdef LOOP
 "loop",
+#endif
+#ifdef RELAY
+"relay",
 #endif
 #ifdef SLIPPEDGRID
 "slippedgrid",
@@ -765,6 +771,10 @@ inline Variant main_variant(Variant v) {
 #ifdef LOOP
   case LOOP_VARIANT:
       return CRAZYHOUSE_VARIANT;
+#endif
+#ifdef RELAY
+  case RELAY_VARIANT:
+      return RELAY_VARIANT;
 #endif
 #ifdef SLIPPEDGRID
   case SLIPPEDGRID_VARIANT:
