@@ -62,6 +62,9 @@ struct StateInfo {
   Bitboard   blockersForKing[COLOR_NB];
   Bitboard   pinners[COLOR_NB];
   Bitboard   checkSquares[PIECE_TYPE_NB];
+#ifdef RELAY
+  Bitboard   relayedCheckSquares[PIECE_TYPE_NB];
+#endif
 };
 
 /// A list to keep track of the position states along the setup moves (from the
@@ -121,6 +124,9 @@ public:
   Bitboard checkers() const;
   Bitboard blockers_for_king(Color c) const;
   Bitboard check_squares(PieceType pt) const;
+#ifdef RELAY
+  Bitboard relayed_check_squares(PieceType pt) const;
+#endif
 
   // Attacks to/from a given square
   Bitboard attackers_to(Square s) const;
@@ -548,6 +554,12 @@ inline Bitboard Position::blockers_for_king(Color c) const {
 inline Bitboard Position::check_squares(PieceType pt) const {
   return st->checkSquares[pt];
 }
+
+#ifdef RELAY
+inline Bitboard Position::relayed_check_squares(PieceType pt) const {
+  return st->relayedCheckSquares[pt];
+}
+#endif
 
 inline bool Position::pawn_passed(Color c, Square s) const {
 #ifdef HORDE

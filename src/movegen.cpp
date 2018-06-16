@@ -77,6 +77,10 @@ namespace {
 #endif
         if (pos.attackers_to(s) & enemies)
             return moveList;
+#ifdef RELAY
+        else if (pos.is_relay() & pos.relayed_attackers_to(s, ~us))
+            return moveList;
+#endif
 
     // Because we generate only legal castling moves we need to verify that
     // when moving the castling rook we do not discover some hidden checker.
@@ -366,10 +370,16 @@ namespace {
 
     for (Square from = *pl; from != SQ_NONE; from = *++pl)
     {
+        Bitboard checkSquares = 0;
         if (Checks)
         {
+            checkSquares = pos.check_squares(Pt);
+#ifdef RELAY
+            if (pos.is_relay())
+                checkSquares |= pos.relayed_check_squares(Pt);
+#endif
             if (    (Pt == BISHOP || Pt == ROOK || Pt == QUEEN)
-                && !(PseudoAttacks[Pt][from] & target & pos.check_squares(Pt)))
+                && !(PseudoAttacks[Pt][from] & target & checkSquares))
                 continue;
 
             if (pos.blockers_for_king(~us) & from)
@@ -394,7 +404,7 @@ namespace {
 
 
         if (Checks)
-            b &= pos.check_squares(Pt);
+            b &= checkSquares;
 
         while (b)
             *moveList++ = make_move(from, pop_lsb(&b));
@@ -872,6 +882,9 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 #endif
 #ifdef TWOKINGS
   if (pos.is_two_kings()) validate = true;
+#endif
+#ifdef RELAY
+  if (pos.is_relay()) validate = true;
 #endif
   Square ksq;
 #ifdef HORDE

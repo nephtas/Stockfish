@@ -264,6 +264,9 @@ namespace {
 #ifdef GRID
           && !pos.is_grid()
 #endif
+#ifdef RELAY
+          && !pos.is_relay()
+#endif
           ? pos.check_squares(type_of(pos.moved_piece(move))) & to_sq(move)
           : pos.gives_check(move);
   }
