@@ -892,7 +892,11 @@ Bitboard Position::slider_attackers_to(Square s, Bitboard occupied) const {
 bool Position::legal(Move m) const {
 
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  assert(is_house() || is_placement() || type_of(m) != DROP);
+#else
   assert(is_house() || type_of(m) != DROP);
+#endif
 #endif
   assert(is_ok(m));
 
@@ -935,6 +939,10 @@ bool Position::legal(Move m) const {
   // All pseudo-legal moves by the horde are legal
   if (is_horde() && is_horde_color(us))
       return true;
+#endif
+#ifdef PLACEMENT
+  if (is_placement() && pieceCountInHand[us][ALL_PIECES] && type_of(m) != DROP)
+      return false;
 #endif
 #ifdef ATOMIC
   if (is_atomic())
@@ -994,7 +1002,11 @@ bool Position::legal(Move m) const {
   }
 
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
       return pieceCountInHand[us][type_of(moved_piece(m))] && empty(to_sq(m));
 #endif
 
@@ -1049,7 +1061,11 @@ bool Position::pseudo_legal(const Move m) const {
 
 #ifdef CRAZYHOUSE
   // Early return on TT move which does not apply for this variant
+#ifdef PLACEMENT
+  if (!is_house() && !is_placement() && type_of(m) == DROP)
+#else
   if (!is_house() && type_of(m) == DROP)
+#endif
       return false;
 #endif
 
