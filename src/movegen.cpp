@@ -177,6 +177,19 @@ namespace {
   }
 #endif
 
+#ifdef PLACEMENT
+  template<Color Us>
+  ExtMove* generate_placements(const Position& pos, ExtMove* moveList, Bitboard b) {
+    generate_drops<Us, KING  , false>(pos, moveList, b);
+    generate_drops<Us, QUEEN , false>(pos, moveList, b);
+    generate_drops<Us, ROOK  , false>(pos, moveList, b);
+    generate_drops<Us, BISHOP, false>(pos, moveList, b);
+    generate_drops<Us, KNIGHT, false>(pos, moveList, b);
+
+    return moveList;
+  }
+#endif
+
   template<Variant V, Color Us, GenType Type>
   ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
@@ -568,6 +581,11 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
                          : generate_all<LOSERS_VARIANT, BLACK, Type>(pos, moveList, target);
   }
 #endif
+#ifdef PLACEMENT
+  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us))
+      return us == WHITE ? generate_placements<WHITE>(pos, moveList, target & Rank1BB)
+                         : generate_placements<BLACK>(pos, moveList, target & Rank8BB);
+#endif
 #ifdef RACE
   if (pos.is_race())
       return us == WHITE ? generate_all<RACE_VARIANT, WHITE, Type>(pos, moveList, target)
@@ -606,6 +624,10 @@ ExtMove* generate<QUIET_CHECKS>(const Position& pos, ExtMove* moveList) {
 #endif
 #ifdef LOSERS
   if (pos.is_losers() && pos.can_capture_losers())
+      return moveList;
+#endif
+#ifdef PLACEMENT
+  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(pos.side_to_move()))
       return moveList;
 #endif
 #ifdef RACE
@@ -680,6 +702,10 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 #endif
 #ifdef EXTINCTION
   if (pos.is_extinction())
+      return moveList;
+#endif
+#ifdef PLACEMENT
+  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(pos.side_to_move()))
       return moveList;
 #endif
 #ifdef RACE
@@ -824,6 +850,9 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
   bool validate = pinned;
 #ifdef GRID
   if (pos.is_grid()) validate = true;
+#endif
+#ifdef PLACEMENT
+  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us)) validate = true;
 #endif
 #ifdef RACE
   if (pos.is_race()) validate = true;

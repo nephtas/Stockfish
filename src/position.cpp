@@ -309,6 +309,10 @@ Position& Position::set(const string& fenStr, bool isChess960, Variant v, StateI
       // Stop before pieces in hand
       else if (is_house() && token == '[')
           break;
+#ifdef PLACEMENT
+      else if (is_placement() && token == '[')
+          break;
+#endif
 #endif
   }
 #ifdef CRAZYHOUSE
@@ -339,6 +343,10 @@ Position& Position::set(const string& fenStr, bool isChess960, Variant v, StateI
       Color c = islower(token) ? BLACK : WHITE;
 #ifdef HORDE
       if (is_horde() && is_horde_color(c))
+          continue;
+#endif
+#ifdef PLACEMENT
+      if (is_placement() && pieceCountInHand[c][KING])
           continue;
 #endif
       Rank rank = relative_rank(c, RANK_1);
@@ -536,6 +544,21 @@ void Position::set_check_info(StateInfo* si) const {
   }
   else
 #endif
+#ifdef PLACEMENT
+  if (is_placement() && (pieceCountInHand[WHITE][KING] || pieceCountInHand[BLACK][KING]))
+  {
+      si->blockersForKing[WHITE] = si->pinners[WHITE] = 0;
+      si->blockersForKing[BLACK] = si->pinners[BLACK] = 0;
+      si->checkSquares[PAWN]   = 0;
+      si->checkSquares[KNIGHT] = 0;
+      si->checkSquares[BISHOP] = 0;
+      si->checkSquares[ROOK]   = 0;
+      si->checkSquares[QUEEN]  = 0;
+      si->checkSquares[KING]   = 0;
+      return;
+  }
+  else
+#endif
   {
   si->blockersForKing[WHITE] = slider_blockers(pieces(BLACK), square<KING>(WHITE), si->pinners[BLACK]);
   si->blockersForKing[BLACK] = slider_blockers(pieces(WHITE), square<KING>(BLACK), si->pinners[WHITE]);
@@ -640,6 +663,11 @@ void Position::set_state(StateInfo* si) const {
 #endif
 #ifdef ATOMIC
   if (is_atomic() && (is_atomic_loss() || kings_adjacent()))
+      si->checkersBB = 0;
+  else
+#endif
+#ifdef PLACEMENT
+  if (is_placement() && (pieceCountInHand[WHITE][KING] || pieceCountInHand[BLACK][KING]))
       si->checkersBB = 0;
   else
 #endif
@@ -749,11 +777,19 @@ const string Position::fen() const {
 
 #ifdef CRAZYHOUSE
   // pieces in hand
+#ifdef PLACEMENT
+  if (is_house() || is_placement())
+#else
   if (is_house())
+#endif
   {
       ss << '[';
       for (Color c = WHITE; c <= BLACK; ++c)
+#ifdef PLACEMENT
+          for (PieceType pt = (is_placement() ? KING : QUEEN); pt >= PAWN; --pt)
+#else
           for (PieceType pt = QUEEN; pt >= PAWN; --pt)
+#endif
               ss << std::string(pieceCountInHand[c][pt], PieceToChar[make_piece(c, pt)]);
       ss << ']';
   }
@@ -2376,6 +2412,14 @@ bool Position::pos_is_ok() const {
           || (is_horde_color(WHITE) ? wksq != SQ_NONE : piece_on(wksq) != W_KING)
           || (is_horde_color(BLACK) ? bksq != SQ_NONE : piece_on(bksq) != B_KING)
           || (ep_square() != SQ_NONE && relative_rank(sideToMove, ep_square()) < RANK_6))
+          assert(0 && "pos_is_ok: Default");
+  }
+  else
+#endif
+#ifdef PLACEMENT
+  if (is_placement() && (pieceCountInHand[WHITE][KING] || pieceCountInHand[BLACK][KING]))
+  {
+      if ((sideToMove != WHITE && sideToMove != BLACK))
           assert(0 && "pos_is_ok: Default");
   }
   else
