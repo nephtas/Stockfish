@@ -180,11 +180,11 @@ namespace {
 #ifdef PLACEMENT
   template<Color Us>
   ExtMove* generate_placements(const Position& pos, ExtMove* moveList, Bitboard b) {
-    generate_drops<Us, KING  , false>(pos, moveList, b);
-    generate_drops<Us, QUEEN , false>(pos, moveList, b);
-    generate_drops<Us, ROOK  , false>(pos, moveList, b);
-    generate_drops<Us, BISHOP, false>(pos, moveList, b);
-    generate_drops<Us, KNIGHT, false>(pos, moveList, b);
+    moveList = generate_drops<Us, KING  , false>(pos, moveList, b);
+    moveList = generate_drops<Us, QUEEN , false>(pos, moveList, b);
+    moveList = generate_drops<Us, ROOK  , false>(pos, moveList, b);
+    moveList = generate_drops<Us, BISHOP, false>(pos, moveList, b);
+    moveList = generate_drops<Us, KNIGHT, false>(pos, moveList, b);
 
     return moveList;
   }

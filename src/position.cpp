@@ -1226,7 +1226,11 @@ bool Position::gives_check(Move m) const {
   Square to = to_sq(m);
 
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
       return st->checkSquares[type_of(dropped_piece(m))] & to;
 #endif
 #ifdef HORDE
@@ -1381,7 +1385,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   Square from = from_sq(m);
   Square to = to_sq(m);
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  Piece pc = (is_house() || is_placement()) && type_of(m) == DROP ? dropped_piece(m) : piece_on(from);
+#else
   Piece pc = is_house() && type_of(m) == DROP ? dropped_piece(m) : piece_on(from);
+#endif
 #else
   Piece pc = piece_on(from);
 #endif
@@ -1522,7 +1530,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 #endif
   // Update hash key
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
       k ^=  Zobrist::psq[pc][to] ^ Zobrist::inHand[pc][pieceCountInHand[color_of(pc)][type_of(pc)] - 1]
           ^ Zobrist::inHand[pc][pieceCountInHand[color_of(pc)][type_of(pc)]];
   else
@@ -1538,7 +1550,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
   // Update castling rights if needed
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP) {} else
+#else
   if (is_house() && type_of(m) == DROP) {} else
+#endif
 #endif
   if (st->castlingRights && (castlingRightsMask[from] | castlingRightsMask[to]))
   {
@@ -1580,7 +1596,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 #endif
   // Move the piece. The tricky Chess960 castling is handled earlier
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
   {
       drop_piece(pc, to);
       st->materialKey ^= Zobrist::psq[pc][pieceCount[pc]-1];
@@ -1658,7 +1678,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
       else
 #endif
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+      if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
       if (is_house() && type_of(m) == DROP)
+#endif
           st->pawnKey ^= Zobrist::psq[pc][to];
       else
 #endif
@@ -1683,7 +1707,11 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   st->checkersBB = givesCheck ? attackers_to(square<KING>(them)) & pieces(us) : 0;
 
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((!is_house() || !is_placement() || type_of(m) != DROP) && is_promoted(from))
+#else
   if ((!is_house() || type_of(m) != DROP) && is_promoted(from))
+#endif
       promotedPieces = (promotedPieces - from) | to;
 #endif
 
@@ -1780,7 +1808,11 @@ void Position::undo_move(Move m) {
       else
 #endif
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+      if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
       if (is_house() && type_of(m) == DROP)
+#endif
           undrop_piece(pc, to); // Remove the dropped piece
       else
 #endif
@@ -1822,7 +1854,11 @@ void Position::undo_move(Move m) {
 #endif
           put_piece(st->capturedPiece, capsq); // Restore the captured piece
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+          if (is_house() || is_placement())
+#else
           if (is_house())
+#endif
           {
 #ifdef BUGHOUSE
               if (! is_bughouse())
@@ -1914,7 +1950,11 @@ Key Position::key_after(Move m) const {
   Square from = from_sq(m);
   Square to = to_sq(m);
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  Piece pc = (is_house() || is_placement()) && type_of(m) == DROP ? dropped_piece(m) : piece_on(from);
+#else
   Piece pc = is_house() && type_of(m) == DROP ? dropped_piece(m) : piece_on(from);
+#endif
 #else
   Piece pc = piece_on(from);
 #endif
@@ -1938,7 +1978,11 @@ Key Position::key_after(Move m) const {
       }
 #endif
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+      if (is_house() || is_placement())
+#else
       if (is_house())
+#endif
       {
           Piece add = is_promoted(to) ? make_piece(~color_of(captured), PAWN) : ~captured;
           k ^= Zobrist::inHand[add][pieceCountInHand[color_of(add)][type_of(add)] + 1]
@@ -1948,7 +1992,11 @@ Key Position::key_after(Move m) const {
   }
 
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
       return k ^ Zobrist::psq[pc][to] ^ Zobrist::inHand[pc][pieceCountInHand[color_of(pc)][type_of(pc)]]
             ^ Zobrist::inHand[pc][pieceCountInHand[color_of(pc)][type_of(pc)] - 1];
 #endif
@@ -2010,7 +2058,11 @@ bool Position::see_ge(Move m, Value threshold) const {
 
   // Only deal with normal moves, assume others pass a simple see
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP) {} else
+#else
   if (is_house() && type_of(m) == DROP) {} else
+#endif
 #endif
   if (type_of(m) != NORMAL)
       return VALUE_ZERO >= threshold;
@@ -2018,8 +2070,13 @@ bool Position::see_ge(Move m, Value threshold) const {
   Bitboard stmAttackers;
   Square from = from_sq(m), to = to_sq(m);
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  PieceType nextVictim = type_of((is_house() || is_placement()) && type_of(m) == DROP ? dropped_piece(m) : piece_on(from));
+  Color us = color_of((is_house() || is_placement()) && type_of(m) == DROP ? dropped_piece(m) : piece_on(from));
+#else
   PieceType nextVictim = type_of(is_house() && type_of(m) == DROP ? dropped_piece(m) : piece_on(from));
   Color us = color_of(is_house() && type_of(m) == DROP ? dropped_piece(m) : piece_on(from));
+#endif
 #else
   PieceType nextVictim = type_of(piece_on(from));
   Color us = color_of(piece_on(from));
@@ -2087,7 +2144,11 @@ bool Position::see_ge(Move m, Value threshold) const {
   // removed, but possibly an X-ray attacker added behind it.
   Bitboard occupied;
 #ifdef CRAZYHOUSE
+#ifdef PLACEMENT
+  if ((is_house() || is_placement()) && type_of(m) == DROP)
+#else
   if (is_house() && type_of(m) == DROP)
+#endif
       occupied = pieces() ^ to;
   else
 #endif

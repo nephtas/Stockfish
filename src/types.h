@@ -743,7 +743,7 @@ constexpr Move make_drop(Square to, Piece pc) {
 }
 
 constexpr Piece dropped_piece(Move m) {
-  return Piece((m >> 6) & 15);
+  return Piece((m >> 6) & 0x0F);
 }
 #endif
 
