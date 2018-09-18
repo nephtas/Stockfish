@@ -282,7 +282,7 @@ ifeq (,$(filter -DCRAZYHOUSE,$(CXXFLAGS)))
 $(error Crazyhouse (-DCRAZYHOUSE) is required for subvariant loop chess)
 endif
 endif
-ifneq (,$(filter -DPLACEMENT,$(CXXFLAGS))) # not a crazyhouse subvariant
+ifneq (,$(filter -DPLACEMENT,$(CXXFLAGS)))
 ifeq (,$(filter -DCRAZYHOUSE,$(CXXFLAGS)))
 $(error Crazyhouse (-DCRAZYHOUSE) is required for subvariant placement chess)
 endif

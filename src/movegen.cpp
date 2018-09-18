@@ -177,19 +177,6 @@ namespace {
   }
 #endif
 
-#ifdef PLACEMENT
-  template<Color Us>
-  ExtMove* generate_placements(const Position& pos, ExtMove* moveList, Bitboard b) {
-    moveList = generate_drops<Us, KING  , false>(pos, moveList, b);
-    moveList = generate_drops<Us, QUEEN , false>(pos, moveList, b);
-    moveList = generate_drops<Us, ROOK  , false>(pos, moveList, b);
-    moveList = generate_drops<Us, BISHOP, false>(pos, moveList, b);
-    moveList = generate_drops<Us, KNIGHT, false>(pos, moveList, b);
-
-    return moveList;
-  }
-#endif
-
   template<Variant V, Color Us, GenType Type>
   ExtMove* generate_pawn_moves(const Position& pos, ExtMove* moveList, Bitboard target) {
 
@@ -422,6 +409,9 @@ namespace {
         moveList = generate_drops<Us, BISHOP, Checks>(pos, moveList, b);
         moveList = generate_drops<Us,   ROOK, Checks>(pos, moveList, b);
         moveList = generate_drops<Us,  QUEEN, Checks>(pos, moveList, b);
+#ifdef PLACEMENT
+        moveList = generate_drops<Us,   KING, Checks>(pos, moveList, b);
+#endif
     }
 #endif
 
@@ -554,8 +544,14 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
 #endif
 #ifdef CRAZYHOUSE
   if (pos.is_house())
+  {
+#ifdef PLACEMENT
+      if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us))
+          target &= (us == WHITE ? Rank1BB : Rank8BB);
+#endif
       return us == WHITE ? generate_all<CRAZYHOUSE_VARIANT, WHITE, Type>(pos, moveList, target)
                          : generate_all<CRAZYHOUSE_VARIANT, BLACK, Type>(pos, moveList, target);
+  }
 #endif
 #ifdef EXTINCTION
   if (pos.is_extinction())
@@ -580,11 +576,6 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
       return us == WHITE ? generate_all<LOSERS_VARIANT, WHITE, Type>(pos, moveList, target)
                          : generate_all<LOSERS_VARIANT, BLACK, Type>(pos, moveList, target);
   }
-#endif
-#ifdef PLACEMENT
-  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us))
-      return us == WHITE ? generate_placements<WHITE>(pos, moveList, target & Rank1BB)
-                         : generate_placements<BLACK>(pos, moveList, target & Rank8BB);
 #endif
 #ifdef RACE
   if (pos.is_race())
@@ -851,9 +842,6 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 #ifdef GRID
   if (pos.is_grid()) validate = true;
 #endif
-#ifdef PLACEMENT
-  if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us)) validate = true;
-#endif
 #ifdef RACE
   if (pos.is_race()) validate = true;
 #endif
@@ -873,11 +861,7 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
   while (cur != moveList)
       if (   (validate || from_sq(*cur) == ksq || type_of(*cur) == ENPASSANT)
 #ifdef CRAZYHOUSE
-#ifdef PLACEMENT
-          && !((pos.is_house() || pos.is_placement()) && type_of(*cur) == DROP)
-#else
           && !(pos.is_house() && type_of(*cur) == DROP)
-#endif
 #endif
           && !pos.legal(*cur))
           *cur = (--moveList)->move;

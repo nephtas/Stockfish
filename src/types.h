@@ -774,7 +774,7 @@ inline Variant main_variant(Variant v) {
 #endif
 #ifdef PLACEMENT
   case PLACEMENT_VARIANT:
-      return CHESS_VARIANT;
+      return CRAZYHOUSE_VARIANT;
 #endif
 #ifdef SLIPPEDGRID
   case SLIPPEDGRID_VARIANT:

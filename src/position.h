@@ -411,7 +411,7 @@ template<PieceType Pt> inline Square Position::square(Color c) const {
       return royal_king(c);
 #endif
 #ifdef PLACEMENT
-  if (is_placement() && pieceCountInHand[c][KING] && pieceCount[make_piece(c, KING)] == 0)
+  if (is_placement() && pieceCountInHand[c][KING])
       return SQ_NONE;
 #endif
 #ifdef ANTI
