@@ -404,6 +404,10 @@ namespace {
     {
         Bitboard b = Type == EVASIONS ? target ^ pos.checkers() :
                      Type == NON_EVASIONS ? target ^ pos.pieces(~Us) : target;
+#ifdef PLACEMENT
+        if (pos.is_placement())
+            b &= (Us == WHITE ? Rank1BB : Rank8BB);
+#endif
         moveList = generate_drops<Us,   PAWN, Checks>(pos, moveList, b & ~(Rank1BB | Rank8BB));
         moveList = generate_drops<Us, KNIGHT, Checks>(pos, moveList, b);
         moveList = generate_drops<Us, BISHOP, Checks>(pos, moveList, b);
@@ -544,14 +548,8 @@ ExtMove* generate(const Position& pos, ExtMove* moveList) {
 #endif
 #ifdef CRAZYHOUSE
   if (pos.is_house())
-  {
-#ifdef PLACEMENT
-      if (pos.is_placement() && pos.count_in_hand<ALL_PIECES>(us))
-          target &= (us == WHITE ? Rank1BB : Rank8BB);
-#endif
       return us == WHITE ? generate_all<CRAZYHOUSE_VARIANT, WHITE, Type>(pos, moveList, target)
                          : generate_all<CRAZYHOUSE_VARIANT, BLACK, Type>(pos, moveList, target);
-  }
 #endif
 #ifdef EXTINCTION
   if (pos.is_extinction())
@@ -841,6 +839,9 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
   bool validate = pinned;
 #ifdef GRID
   if (pos.is_grid()) validate = true;
+#endif
+#ifdef PLACEMENT
+  if (pos.is_placement()) validate = true;
 #endif
 #ifdef RACE
   if (pos.is_race()) validate = true;

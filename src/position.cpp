@@ -910,9 +910,17 @@ bool Position::legal(Move m) const {
       return false;
 #endif
 #ifdef HORDE
+#ifdef PLACEMENT
+  assert((is_horde() && is_horde_color(us)) || (is_placement() && pieceCountInHand[us][KING]) || piece_on(square<KING>(us)) == make_piece(us, KING));
+#else
   assert((is_horde() && is_horde_color(us)) || piece_on(square<KING>(us)) == make_piece(us, KING));
+#endif
+#else
+#ifdef PLACEMENT
+  assert((is_placement() && pieceCountInHand[us][KING]) || piece_on(square<KING>(us)) == make_piece(us, KING));
 #else
   assert(piece_on(square<KING>(us)) == make_piece(us, KING));
+#endif
 #endif
 #ifdef LOSERS
   assert(!(is_losers() && !capture(m) && can_capture_losers()));
