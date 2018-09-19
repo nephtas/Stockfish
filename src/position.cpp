@@ -943,20 +943,20 @@ bool Position::legal(Move m) const {
           return false;
       if (type_of(m) == DROP)
       {
-          Bitboard b = (us == WHITE ? Rank1BB : Rank8BB) & ~pieces();
+          Bitboard b = ~pieces() & (us == WHITE ? Rank1BB : Rank8BB);
 
           if (type_of(dropped_piece(m)) == BISHOP)
           {
-              if (DarkSquares & pieces(us, BISHOP))
+              if (pieces(us, BISHOP) & DarkSquares)
                   b &= ~DarkSquares;
-              if (~DarkSquares & pieces(us, BISHOP))
+              if (pieces(us, BISHOP) & ~DarkSquares)
                   b &= DarkSquares;
           }
           else if (pieceCountInHand[us][BISHOP])
           {
-              if (!(DarkSquares & pieces(us, BISHOP)) && !(DarkSquares & (b - to_sq(m))))
+              if (!(pieces(us, BISHOP) & DarkSquares) && !((b - to_sq(m)) & DarkSquares))
                   b &= ~DarkSquares;
-              if (!(~DarkSquares & pieces(us, BISHOP)) && !(~DarkSquares & (b - to_sq(m))))
+              if (!(pieces(us, BISHOP) & ~DarkSquares) && !((b - to_sq(m)) & ~DarkSquares))
                   b &= DarkSquares;
           }
           if (to_sq(m) & ~b)
