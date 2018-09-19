@@ -937,8 +937,17 @@ bool Position::legal(Move m) const {
       return true;
 #endif
 #ifdef PLACEMENT
-  if (is_placement() && pieceCountInHand[us][ALL_PIECES] && type_of(m) != DROP)
-      return false;
+  if (is_placement())
+  {
+      if (pieceCountInHand[us][ALL_PIECES] && type_of(m) != DROP)
+          return false;
+      if (type_of(m) == DROP)
+      {
+          Piece pc = dropped_piece(m);
+          if (type_of(pc) == BISHOP && pieceCount[pc] && !opposite_colors(square<BISHOP>(us), to_sq(m)))
+              return false;
+      }
+  }
 #endif
 #ifdef ATOMIC
   if (is_atomic())
