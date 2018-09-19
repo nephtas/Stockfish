@@ -170,7 +170,6 @@ namespace {
 #ifdef PLACEMENT
         if (pos.is_placement())
         {
-            b &= Us == WHITE ? Rank1BB : Rank8BB;
             if (Pt == BISHOP)
             {
                 if (pos.pieces(Us, BISHOP) & DarkSquares)
