@@ -167,6 +167,26 @@ namespace {
   ExtMove* generate_drops(const Position& pos, ExtMove* moveList, Bitboard b) {
     if (pos.count_in_hand<Pt>(Us))
     {
+#ifdef PLACEMENT
+        if (pos.is_placement())
+        {
+            b &= Us == WHITE ? Rank1BB : Rank8BB;
+            if (Pt == BISHOP)
+            {
+                if (pos.pieces(Us, BISHOP) & DarkSquares)
+                    b &= ~DarkSquares;
+                if (pos.pieces(Us, BISHOP) & ~DarkSquares)
+                    b &= DarkSquares;
+            }
+            else
+            {
+                if (!(pos.pieces(Us, BISHOP) & DarkSquares) && popcount((b & DarkSquares)) <= 1)
+                    b &= ~DarkSquares;
+                if (!(pos.pieces(Us, BISHOP) & ~DarkSquares) && popcount((b & ~DarkSquares)) <= 1)
+                    b &= DarkSquares;
+            }
+        }
+#endif
         if (Checks)
             b &= pos.check_squares(Pt);
         while (b)
