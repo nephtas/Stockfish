@@ -1602,6 +1602,21 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   {
       drop_piece(pc, to);
       st->materialKey ^= Zobrist::psq[pc][pieceCount[pc]-1];
+#ifdef PLACEMENT
+      if (is_placement() && !pieceCountInHand[us][ALL_PIECES])
+      {
+          Square rsq, ksq = square<KING>(us);
+          if (ksq == relative_square(us, SQ_E1))
+          {
+              Piece rook = make_piece(us, ROOK);
+              if (piece_on(rsq = relative_square(us, SQ_H1)) == rook)
+                  set_castling_right(us, ksq, rsq);
+              if (piece_on(rsq = relative_square(us, SQ_A1)) == rook)
+                  set_castling_right(us, ksq, rsq);
+              k ^= Zobrist::castling[st->castlingRights & castlingRightsMask[ksq]];
+          }
+      }
+#endif
   }
   else
 #endif
@@ -1799,7 +1814,13 @@ void Position::undo_move(Move m) {
 #endif
 #ifdef CRAZYHOUSE
       if (is_house() && type_of(m) == DROP)
+      {
           undrop_piece(pc, to); // Remove the dropped piece
+#ifdef PLACEMENT
+          if (is_placement())
+              castlingRightsMask[relative_square(us, SQ_E1)] = 0;
+#endif
+      }
       else
 #endif
       move_piece(pc, to, from); // Put the piece back at the source square

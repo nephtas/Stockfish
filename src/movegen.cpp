@@ -168,7 +168,7 @@ namespace {
     if (pos.count_in_hand<Pt>(Us))
     {
 #ifdef PLACEMENT
-        if (pos.is_placement())
+        if (pos.is_placement() && pos.count_in_hand<BISHOP>(Us))
         {
             if (Pt == BISHOP)
             {
